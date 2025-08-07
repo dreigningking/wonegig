@@ -20,8 +20,7 @@
                         </label>
                         <input type="text"
                             class="form-control {{ $hasError ? 'is-invalid' : '' }}"
-                            wire:model="templateData.{{ $field['name'] }}.value"
-                            wire:change="updateField('{{ $field['name'] }}', $event.target.value)"
+                            wire:model.lazy="templateData.{{ $field['name'] }}.value"
                             @if($field['required'] ?? false) required @endif>
                     </div>
                     @break
@@ -35,8 +34,7 @@
                             @endif
                         </label>
                         <textarea class="form-control {{ $hasError ? 'is-invalid' : '' }}"
-                            wire:model="templateData.{{ $field['name'] }}.value"
-                            wire:change="updateField('{{ $field['name'] }}', $event.target.value)"
+                            wire:model.lazy="templateData.{{ $field['name'] }}.value"
                             @if($field['required'] ?? false) required @endif></textarea>
 
                     </div>
@@ -52,8 +50,7 @@
                         </label>
                         <input type="number"
                             class="form-control {{ $hasError ? 'is-invalid' : '' }}"
-                            wire:model="templateData.{{ $field['name'] }}.value"
-                                wire:change="updateField('{{ $field['name'] }}', $event.target.value)"
+                            wire:model.lazy="templateData.{{ $field['name'] }}.value"
                                 @if($field['required'] ?? false) required @endif>
 
                     </div>
@@ -69,8 +66,7 @@
                         </label>
                         <input type="email"
                             class="form-control {{ $hasError ? 'is-invalid' : '' }}"
-                            wire:model="templateData.{{ $field['name'] }}.value"
-                                wire:change="updateField('{{ $field['name'] }}', $event.target.value)"
+                            wire:model.lazy="templateData.{{ $field['name'] }}.value"
                                 @if($field['required'] ?? false) required @endif>
                     </div>
                     @break
@@ -85,8 +81,7 @@
                         </label>
                         <input type="url"
                             class="form-control {{ $hasError ? 'is-invalid' : '' }}"
-                                wire:model="templateData.{{ $field['name'] }}.value"
-                                wire:change="updateField('{{ $field['name'] }}', $event.target.value)"
+                                wire:model.lazy="templateData.{{ $field['name'] }}.value"
                                 @if($field['required'] ?? false) required @endif>
                     </div>
                     @break
@@ -101,8 +96,7 @@
                         </label>
                         <input type="date"
                             class="form-control {{ $hasError ? 'is-invalid' : '' }}"
-                            wire:model="templateData.{{ $field['name'] }}.value"
-                                wire:change="updateField('{{ $field['name'] }}', $event.target.value)"
+                            wire:model.lazy="templateData.{{ $field['name'] }}.value"
                                 @if($field['required'] ?? false) required @endif>
                     </div>
                     @break
@@ -117,8 +111,7 @@
                         </label>
                         <input type="time"
                             class="form-control {{ $hasError ? 'is-invalid' : '' }}"
-                            wire:model="templateData.{{ $field['name'] }}.value"
-                                wire:change="updateField('{{ $field['name'] }}', $event.target.value)"
+                            wire:model.lazy="templateData.{{ $field['name'] }}.value"
                                 @if($field['required'] ?? false) required @endif>
                     </div>
                     @break
@@ -132,8 +125,7 @@
                             @endif
                         </label>
                         <select class="form-select {{ $hasError ? 'is-invalid' : '' }}"
-                            wire:model="templateData.{{ $field['name'] }}.value"
-                            wire:change="updateField('{{ $field['name'] }}', $event.target.value)"
+                            wire:model.lazy="templateData.{{ $field['name'] }}.value"
                                 @if($field['required'] ?? false) required @endif>
                                 <option value="">Select {{ $field['title'] }}</option>
                                 @foreach($field['options'] as $option)
@@ -155,8 +147,7 @@
                         <div class="form-check">
                             <input type="checkbox"
                                     class="form-check-input {{ $hasError ? 'is-invalid' : '' }}"
-                                    wire:model="templateData.{{ $field['name'] }}.value"
-                                    wire:change="updateField('{{ $field['name'] }}', $event.target.value)"
+                                    wire:model.lazy="templateData.{{ $field['name'] }}.value"
                                     value="{{ $option }}"
                                     @if($field['required'] ?? false) required @endif>
                                 <label class="form-check-label">{{ $option }}</label>
@@ -177,8 +168,7 @@
                         <div class="form-check">
                             <input type="radio"
                                     class="form-check-input {{ $hasError ? 'is-invalid' : '' }}"
-                                    wire:model="templateData.{{ $field['name'] }}.value"
-                                    wire:change="updateField('{{ $field['name'] }}', $event.target.value)"
+                                    wire:model.lazy="templateData.{{ $field['name'] }}.value"
                                     value="{{ $option }}"
                                     @if($field['required'] ?? false) required @endif>
                                 <label class="form-check-label">{{ $option }}</label>
@@ -198,8 +188,17 @@
                         <input type="file"
                             accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.mp4,.mov,.avi,.wmv,.mkv"
                                 class="form-control {{ $hasError ? 'is-invalid' : '' }}"
-                                wire:change="updateField('{{ $field['name'] }}', $event.target.files[0])"
+                                wire:model="templateData.{{ $field['name'] }}.value"
                                 @if($field['required'] ?? false) required @endif>
+                        
+                        <div wire:loading wire:target="templateData.{{ $field['name'] }}.value" class="mt-2">
+                            <div class="d-flex align-items-center">
+                                <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <small class="text-muted">Uploading file...</small>
+                            </div>
+                        </div>
                         
                         @if(isset($templateData[$field['name']]['value']) && is_string($templateData[$field['name']]['value']) && Str::startsWith($templateData[$field['name']]['value'], 'storage/'))
                         <div class="mt-2">

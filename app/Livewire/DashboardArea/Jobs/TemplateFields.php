@@ -7,6 +7,7 @@ use Illuminate\Support\Str;
 use App\Models\TaskTemplate;
 use Livewire\Attributes\On; 
 use Livewire\WithFileUploads;
+use Livewire\TemporaryUploadedFile;
 
 use Illuminate\Support\Facades\Log;
 
@@ -109,6 +110,61 @@ class TemplateFields extends Component
                 'full_template_data' => $this->templateData
             ]);
             $this->dispatch('templateFieldUpdated', $key, $this->templateData[$key]['value'], $this->templateData);
+        }
+    }
+
+    /**
+     * Handle updates to templateData property for file uploads
+     */
+    public function updatedTemplateData($value, $key)
+    {
+        // Parse the key to get field name (format: fieldName.value)
+        $parts = explode('.', $key);
+        if (count($parts) === 2 && $parts[1] === 'value') {
+            $fieldKey = $parts[0];
+            
+            // Check if this is a file upload
+            if (isset($this->templateData[$fieldKey]) && isset($this->templateData[$fieldKey]['type']) && $this->templateData[$fieldKey]['type'] === 'file') {
+                if ($value instanceof \Livewire\TemporaryUploadedFile) {
+                    Log::info("File upload detected via updatedTemplateData for field: {$fieldKey}", [
+                        'original_name' => $value->getClientOriginalName(),
+                        'size' => $value->getSize(),
+                        'mime_type' => $value->getMimeType()
+                    ]);
+                    
+                    try {
+                        // Validate file
+                        $this->validate([
+                            "templateData.$fieldKey.value" => 'file|max:10240|mimes:jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx,ppt,pptx,mp4,mov,avi,wmv,mkv'
+                        ], [
+                            "templateData.$fieldKey.value.mimes" => "Invalid file type for {$this->templateData[$fieldKey]['title']}"
+                        ]);
+                        
+                        // Store file
+                        $path = $value->store('tasks/template-fields', 'public');
+                        $this->templateData[$fieldKey]['value'] = 'storage/' . $path;
+                        
+                        Log::info("File stored successfully via updatedTemplateData", [
+                            'path' => $this->templateData[$fieldKey]['value'],
+                            'field_key' => $fieldKey
+                        ]);
+                        
+                        // Clear validation error for this field if it exists
+                        if (isset($this->validationErrors["templateData.{$fieldKey}.value"])) {
+                            unset($this->validationErrors["templateData.{$fieldKey}.value"]);
+                        }
+                        
+                        // Dispatch event to notify parent component
+                        $this->dispatch('templateFieldUpdated', $fieldKey, $this->templateData[$fieldKey]['value'], $this->templateData);
+                    } catch (\Exception $e) {
+                        Log::error("File upload failed: " . $e->getMessage());
+                        $this->addError("templateData.$fieldKey.value", "Failed to upload file: " . $e->getMessage());
+                    }
+                }
+            } else {
+                // For non-file fields, dispatch the update event
+                $this->dispatch('templateFieldUpdated', $fieldKey, $value, $this->templateData);
+            }
         }
     }
 
